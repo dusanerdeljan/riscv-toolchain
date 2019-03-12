@@ -1,4 +1,4 @@
-compile: rv64ins.c decodingRV32.c decodingRVC.c csr.c
-	gcc -o rv64dis -std=c99 rv64ins.c decodingRV32.c decodingRVC.c csr.c
+compile: src/rv64ins.c src/decodingRVG.c src/decodingRVC.c src/csr.c
+	gcc -o rv64dis -std=c99 src/rv64ins.c src/decodingRVG.c src/decodingRVC.c src/csr.c
 install: rv64dis
 	install -m 0755 rv64dis /usr/local/bin
