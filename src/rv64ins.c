@@ -295,15 +295,101 @@ void printUsage()
     printf("  Options are:\n");
     printf("    -tX\tArchitecture type, where X is 32/64/128\n");
     printf("    -i\tDisassembles RVXI (base integer) instruction set\n");
-    printf("    -f\tDisassembles RVXF (floating-point) standard extension\n");
+    printf("    -f\tDisassembles RVXF (single-precision, floating-point) standard extension\n");
     printf("    -a\tDisassembles RVXA (atomic) standard extension\n");
     printf("    -m\tDisassembles RVXM (multiplication) standard extension\n");
-    printf("    -d\tDisassembles RVXD (floating-point, requires F standard extension) standard extension\n");
+    printf("    -d\tDisassembles RVXD (double-precision, floating-point, requires F standard extension) standard extension\n");
     printf("    -c\tDisassembles RVXC (compressed) instruction set\n");
     printf("    -e\tDisassembles RV32E (can only be combined with M,A,C standard extensions, used on embedded systems) instruction set\n");
     printf("    -q\tDisassembles RV128Q (floating-point, requires RV64IFD instruction set) extension\n");
+    printf("    -h\tPrint usage\n");
     printf("  If no options are given the default instruction set is RV64IFAMDC (RV64GC)\n");
     exit(2);
+}
+
+int validArguments(INSTRUCTIONS* st_ins)
+{
+    if(!(st_ins->type == 32 || st_ins->type == 64 || st_ins->type == 128))
+    {
+        printf("%sError:%s Architecture type must be 32/64/128.\n", RED, RESET);
+        return 0;
+    }
+    if(st_ins->i)
+    {
+        if(st_ins->e)
+        {
+            printf("%sError:%s Can't use RV%dI Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
+            return 0;
+        }
+    }
+    if(st_ins->f)
+    {
+        if(st_ins->e)
+        {
+            printf("%sError:%s Can't use RV%dF Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
+            return 0;
+        }
+    }
+    if(st_ins->d)
+    {
+        if(st_ins->e)
+        {
+            printf("%sError:%s Can't use RV%dD Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
+            return 0;
+        }
+        if(!st_ins->f)
+        {
+            printf("%sError:%s Can't use RV%dD Instruction without RV%dF Instruction set.\n", RED, RESET, st_ins->type, st_ins->type);
+            return 0;
+        }
+    }
+    if(st_ins->q)
+    {
+        if(st_ins->type != 128)
+        {
+            printf("%sError:%s Can't use RV%d Instruction sets with RV128Q Instruction set.\n", RED,RESET, st_ins->type);
+            return 0;
+        }
+        if(!(st_ins->f || st_ins->q || st_ins->i))
+        {
+            printf("%sError:%s Can't use RV128Q Instruction without RV64IFD Instruction set.\n", RED, RESET);
+            return 0;
+        }
+        if(st_ins->e)
+        {
+            printf("%sError:%s Can't use RV%dQ Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
+            return 0;
+        }
+    }
+    if(st_ins->e)
+    {
+        if(st_ins->type != 32)
+        {
+            printf("%sError:%s Can't use RV%d Instruction sets with RV32E Instruction set.\n", RED,RESET, st_ins->type);
+            return 0;
+        }
+        if(st_ins->i)
+        {
+            printf("%sError:%s Can't use RV32E Instruction set with RV32I Instruction set.\n", RED, RESET);
+            return 0;
+        }
+        if(st_ins->d)
+        {
+            printf("%sError:%s Can't use RV32E Instruction set with RV32D Instruction set.\n", RED, RESET);
+            return 0;
+        }
+        if(st_ins->f)
+        {
+            printf("%sError:%s Can't use RV32E Instruction set with RV32F Instruction set.\n", RED, RESET);
+            exit(EXIT_FAILURE);
+        }
+        if(st_ins->q)
+        {
+            printf("%sError:%s Can't use RV32E Instruction set with RV128Q Instruction set.\n", RED, RESET);
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int main(int argc, char *argv[])
@@ -318,22 +404,14 @@ int main(int argc, char *argv[])
     }
     int option;
     // Parse optional arguments
-    while((option = getopt(argc, argv, "ifamdceqt:")) != -1)
+    while((option = getopt(argc, argv, "ifamdceqht:")) != -1)
     {
         switch(option)
         {
             case 'i':
-                if(st_ins->e){
-                    printf("%sError:%s Can't use RV%dI Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
                 st_ins->i = 1;
                 break;
             case 'f':
-                if(st_ins->e){
-                    printf("%sError:%s Can't use RV%dF Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
                 st_ins->f = 1;
                 break;
             case 'a':
@@ -343,14 +421,6 @@ int main(int argc, char *argv[])
                 st_ins->m = 1;
                 break;
             case 'd':
-                if(st_ins->e){
-                    printf("%sError:%s Can't use RV%dD Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
-                if(!st_ins->f){
-                    printf("%sError:%s Can't use RV%dD Instruction without RV%dF Instruction set.\n", RED, RESET, st_ins->type, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
                 st_ins->d = 1;
                 break;
             case 'c':
@@ -358,54 +428,22 @@ int main(int argc, char *argv[])
                 break;
             case 'q':
                 st_ins->type = 128;
-                if(!(st_ins->f || st_ins->q || st_ins->i)){
-                    printf("%sError:%s Can't use RV128Q Instruction without RV64IFD Instruction set.\n", RED, RESET);
-                    exit(EXIT_FAILURE);
-                }
-                if(st_ins->e){
-                    printf("%sError:%s Can't use RV%dQ Instruction set with RV32E Instruction set.\n", RED, RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
                 st_ins->q = 1;
                 break;
             case 'e':
-                if(st_ins->i){
-                    printf("%sError:%s Can't use RV32E Instruction set with RV32I Instruction set.\n", RED, RESET);
-                    exit(EXIT_FAILURE);
-                }
-                if(st_ins->d){
-                    printf("%sError:%s Can't use RV32E Instruction set with RV32D Instruction set.\n", RED, RESET);
-                    exit(EXIT_FAILURE);
-                }
-                if(st_ins->f){
-                    printf("%sError:%s Can't use RV32E Instruction set with RV32F Instruction set.\n", RED, RESET);
-                    exit(EXIT_FAILURE);
-                }
-                if(st_ins->q){
-                    printf("%sError:%s Can't use RV32E Instruction set with RV128Q Instruction set.\n", RED, RESET);
-                    exit(EXIT_FAILURE);
-                }
                 st_ins->e = 1;
                 st_ins->type = 32;
                 break;
             case 't':
                 st_ins->type = atoi(optarg);
-                if(!(st_ins->type == 32 || st_ins->type == 64 || st_ins->type == 128)){
-                    printUsage();
-                }
-                if(st_ins->e && st_ins->type != 32){
-                    printf("%sError:%s Can't use RV%d Instruction sets with RV32E Instruction set.\n", RED,RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
-                if(st_ins->q && st_ins->type != 128){
-                    printf("%sError:%s Can't use RV%d Instruction sets with RV128Q Instruction set.\n", RED,RESET, st_ins->type);
-                    exit(EXIT_FAILURE);
-                }
                 break;
+            case 'h':
             default:
                 printUsage();
         }
     }
+    if(!validArguments(st_ins))
+        exit(EXIT_FAILURE);
     if(noInstructionSets(st_ins))
         setInstructionsSetsToOne(st_ins);
     argc -= optind;
