@@ -25,7 +25,7 @@ Options are:
 If no options are given the **default instruction set is RV64GC (RV64IFAMDC)**
 
 Program creates a table which has the following columns:
-1. Number - number of the instruction
+1. Number - ordinal number of the instruction
 2. Address - virtual address of the instructions
 3. Instructions - hexadecimal representation of the instruction
 4. Legnth - length of the instruction - 32-bit or 16-bit
@@ -36,14 +36,14 @@ In the foler **examples** are 6 executable RISC-V ELF files:
   * **example.bin** - program calculates the greatest common divider of 12 and 8, file does not contain section .text and only consists of instructions from RV32I instruction set
   * **example2.bin** - program calculates the greatest common divider of 12 and 8, file contains section .text and only consists of instructions from RV32I instruction set
   * **example3.bin** - program calculates the greatest common divider of 12 and 8, file does not contain section .text and only consists of instructions from RV32IC instruction set
-  * **example4.bin** - program which is a result of inserting a non-executable program segment in example.bin
-  * **example5.bin** - program made for testing, file does contain sectino .text and contains instructions from RV64IFAMD istruction set
+  * **example4.bin** - program which is a result of inserting a non-executable program segment in the file example.bin
+  * **example5.bin** - program made for testing, file does contain sectinon .text and contains instructions from RV64IFAMD istruction set
   * **example6.bin** - rv64dis compiled with RISC-V compiler (<em>pre-built toolchain: riscv-linux-gnu-gcc</em>)
   
 ## How does it work?
 
-If the given file is valid program check whether the file is 32-bit or 64-bit by checking ELF Header - **<em>e_ident[EI_CLASS]</em>** and based on that it continues to search for a program segment which contains instructions.</br>
-Firstly, program check if the file has sections. If not, it searches for program segments which have **<em>execute flag</em>** (1) set. The found program segment is then analized <em>word</em> by <em>word</em> (2 bytes) - if the 2 lowest bytes of the instructions are 11 then the instruction's length is 32-bit, else if they are 00, 10 or 01 the instruction is 16-bit long.</br>
+If the given file is valid program checks whether the file is 32-bit or 64-bit by checking ELF Header - **<em>e_ident[EI_CLASS]</em>** and based on that it continues to search for a program segment which contains instructions.</br>
+Firstly, program checks if the file has sections. If not, it searches for program segments which have **<em>execute flag</em>** (1) set. The found program segment is then analized <em>word</em> by <em>word</em> (2 bytes) - if the 2 lowest bytes of the instructions are 11 then the instruction's length is 32-bit, else if they are 00, 10 or 01 the instruction is 16-bit long.</br>
 If, on the other hand, the given file has sections, program searches for a section which contains the string with the names of all the sections (section with index **<em>e_shstrndx</em>**) and in that string it searches for a substring **<em>".text"</em>**, and the index which corresponds to the index of the beginning of the substring is the index of the sections .text which contains instructions, which are then processed as in the first case.</br>
 When the program finds the program segment with the instructions it disassembles only the instructions which belong to the given instruction set.
 
