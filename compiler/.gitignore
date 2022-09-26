@@ -1,0 +1,7 @@
+.make.*
+lex.yy.c
+*.output
+*.tab.**
+micro_riscv
+*.mc
+*.s

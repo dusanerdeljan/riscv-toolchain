@@ -1,0 +1,5 @@
+.make.*
+lex.yy.c
+*.output
+*.tab.**
+riscvsim

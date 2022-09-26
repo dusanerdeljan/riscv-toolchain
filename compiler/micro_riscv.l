@@ -1,7 +1,7 @@
 %option noyywrap yylineno
 %{
    #include <string.h>
-   #include "micko.tab.h"
+   #include "micro_riscv.tab.h"
    #include "defs.h"
    extern YYSTYPE yylval;
 %}
