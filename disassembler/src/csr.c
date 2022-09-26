@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "../inc/csr.h"
+#include "../include/csr.h"
 
 char* decodeCSR(int csrCode)
 {

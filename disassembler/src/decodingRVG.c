@@ -18,8 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../inc/decodingRVG.h"
-#include "../inc/csr.h"
+#include "../include/decodingRVG.h"
+#include "../include/csr.h"
 
 
 // Integer registers - ABI names

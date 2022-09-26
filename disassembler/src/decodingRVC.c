@@ -18,8 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../inc/decodingRVC.h"
-#include "../inc/decodingRVG.h"
+#include "../include/decodingRVC.h"
+#include "../include/decodingRVG.h"
 
 // 3 bit encoded integer registers
 char* REGISTERS3[] = {"s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5"};

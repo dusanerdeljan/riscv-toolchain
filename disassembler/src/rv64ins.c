@@ -21,8 +21,8 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <inttypes.h>
-#include "../inc/decodingRVG.h"
-#include "../inc/decodingRVC.h"
+#include "../include/decodingRVG.h"
+#include "../include/decodingRVC.h"
 
 // Ansi colors escape codes
 #define RED "\x1B[31m"
