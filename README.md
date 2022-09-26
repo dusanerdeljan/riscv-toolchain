@@ -1,14 +1,52 @@
-# rv64dis v1.4
+# RISC-V Toolchain
 
-rv64dis is a program which disassembles RISC-V ELF files. As a command line argument you can pass the specific instruction set (or extension) that you want to disassemble and architecture type - 32-bit, 64-bit or 128-bit. The program is made for testing whether a RISC-V program is compatible to be executed on a processor/microcontroller which implements given instruction set.
+Mini RISC-V toolchain for Linux consisting of compiler, simulator and disassembler. Required programs for setting up the toolchain are `flex`, `bison`, `gcc` and `make`.
 
-## Compilation
+## Compiler
 
-In order to compile this program you need to have **gcc compiler**(version which supports C99 standard) and **Makefile**. It is compiled using **make** command (or **sudo make install** command which requires sudo password and will install rv64dis to /usr/local/bin). After compilation, rv64dis executable will be created in your working directory. The program has been tested on Linux Ubuntu 18.10, gcc v8.2.0, make v4.2.1.
+Compiler supports a limited subset of the C language (called Micro-C) and generates RV32I assembly code.
 
-## Usage
+#### Compilation
 
-**./rv64dis <option(s)> riscv-elf-file**
+Run `make` in the `riscv-toolchain/compiler` directory.
+
+#### Example usage
+
+` ./micro_riscv < example-file.mc`
+
+![image](https://user-images.githubusercontent.com/27950949/192309291-e0d495cc-fe9d-41e1-bbe9-b8ba85fd7ff5.png)
+
+## Simulator
+
+Simulator support RV32I instruction set.
+
+#### Compilation
+
+Run `make` in the `riscv-toolchain/compiler` directory.
+
+#### Options
+
+Options are:
+  * -r Only print the result, without running the interactive mode
+  * -s <int> Maximum number of instructions a simulator can execute
+  
+If no options are given, simulator will run in interactive mode for the maxmimum of 2000 instructions.
+
+#### Example usage
+
+`./riscvsim < sum_up_to.s`
+
+![image](https://user-images.githubusercontent.com/27950949/192308735-6ec91531-966b-46fe-9cb9-b3c2bd006e52.png)
+
+## Disassembler
+
+Disassembler supports RV64GC instruction sets and is made for testing wether the given program is compatible for execution on a Linux-compatible processor/microcontroller which supports given instruction sets.
+
+### Compilation
+
+Run `make compile` in the `riscv-toolchain/disassembler` directory.
+
+### Options
 
 Options are:
   * -t X	Architecture type, where X is 32/64/128
@@ -24,28 +62,11 @@ Options are:
 
 If no options are given the **default instruction set is RV64GC (RV64IFAMDC)**
 
-Program creates a table which has the following columns:
-1. Number - ordinal number of the instruction
-2. Address - virtual address of the instructions
-3. Instructions - hexadecimal representation of the instruction
-4. Legnth - length of the instruction - 32-bit or 16-bit
-5. RISC-V Instruction - RISC-V assembly base instruction 
+### Example usage
 
-After printing the table with instruction data, program prints the total number of disassembled instructions. If the percentage of disassembled instructions is 100% that means that the given RISC-V program can be executed on a processor/microcontroller which implements the given instruction set.
-In the foler **examples** are 6 executable RISC-V ELF files:
-  * **example.bin** - program calculates the greatest common divider of 12 and 8, file does not contain section .text and only consists of instructions from RV32I instruction set
-  * **example2.bin** - program calculates the greatest common divider of 12 and 8, file contains section .text and only consists of instructions from RV32I instruction set
-  * **example3.bin** - program calculates the greatest common divider of 12 and 8, file does not contain section .text and only consists of instructions from RV32IC instruction set
-  * **example4.bin** - program which is a result of inserting a non-executable program segment in the file example.bin
-  * **example5.bin** - program made for testing, file does contain sectinon .text and contains instructions from RV64IFAMD istruction set
-  * **example6.bin** - rv64dis compiled with RISC-V compiler (<em>pre-built toolchain: riscv-linux-gnu-gcc</em>)
-  
-## How does it work?
+`./rv64dis examples/example4.bin`
 
-If the given file is valid program checks whether the file is 32-bit or 64-bit by checking ELF Header - **<em>e_ident[EI_CLASS]</em>** and based on that it continues to search for a program segment which contains instructions.</br>
-Firstly, program checks if the file has sections. If not, it searches for program segments which have **<em>execute flag</em>** (1) set. The found program segment is then analized <em>word</em> by <em>word</em> (2 bytes) - if the 2 lowest bytes of the instructions are 11 then the instruction's length is 32-bit, else if they are 00, 10 or 01 the instruction is 16-bit long.</br>
-If, on the other hand, the given file has sections, program searches for a section which contains the string with the names of all the sections (section with index **<em>e_shstrndx</em>**) and in that string it searches for a substring **<em>".text"</em>**, and the index which corresponds to the index of the beginning of the substring is the index of the sections .text which contains instructions, which are then processed as in the first case.</br>
-When the program finds the program segment with the instructions it disassembles only the instructions which belong to the given instruction set.
+![image](https://user-images.githubusercontent.com/27950949/192309037-1be0c8ac-090f-42f4-9409-3a1e9080833c.png)
 
 ## License
 
