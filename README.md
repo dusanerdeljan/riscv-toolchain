@@ -18,11 +18,11 @@ Run `make` in the `riscv-toolchain/compiler` directory.
 
 ## Simulator
 
-Simulator support RV32I instruction set.
+Simulator supports RV32I instruction set.
 
 #### Compilation
 
-Run `make` in the `riscv-toolchain/compiler` directory.
+Run `make` in the `riscv-toolchain/simulator` directory.
 
 #### Options
 
